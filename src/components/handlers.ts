@@ -1,6 +1,6 @@
 export class EFKW extends Error {
-  constructor(msg: string) {
-    super(`[@fullkekw/fkw-popup]: ${msg}`);
+  constructor(message: string) {
+    super(`[@fullkekw/popup]: ${message}`);
   }
 }
 

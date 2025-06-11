@@ -35,7 +35,7 @@
     "src/components",
     "src/interfaces",
     "src/styles",
-    "src/Home.tsx",
+    "src/Page.tsx",
     "src/main.tsx",
     "src/Router.tsx",
   ],

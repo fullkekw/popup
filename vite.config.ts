@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import dts from 'vite-plugin-dts';
-import ip from 'ip';
 import path from 'path';
 
 // https://vitejs.dev/config/
@@ -26,7 +25,4 @@ export default defineConfig({
     emptyOutDir: true
   },
   plugins: [react(), dts()],
-  server: {
-    host: ip.address()
-  }
 });

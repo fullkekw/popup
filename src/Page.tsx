@@ -3,7 +3,7 @@ import { PopupButton, PopupDialog, PopupLayer } from "./_package/index";
 
 
 
-const Home: React.FC = () => {
+const Page: React.FC = () => {
   const [state, setState] = useState(false);
 
   const popupId1 = useId().replaceAll(':', '');
@@ -51,4 +51,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default Page;
