@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useId } from "react";
-import { PopupButton, PopupLayer, PopupWindow } from './_package/Package';
+import { PopupLayer, PopupButton, PopupWindow } from './_package/index';
 
 
 
@@ -11,10 +11,10 @@ const Page: React.FC = () => {
 
 
   useEffect(() => {
-    // setTimeout(() => {
-    //   console.log('close');
-    //   setState(false);
-    // }, 2000);
+    setTimeout(() => {
+      console.log('close');
+      setState(false);
+    }, 2000);
   }, []);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const Page: React.FC = () => {
 
           <div>
             <div>
-              <PopupWindow className="popup-1 w-[400px] h-[450px] bg-white" id={popupId1} defaultOpen isOpen={state} setIsOpen={setState}>
+              <PopupWindow className="popup-1 w-[400px] h-[450px] bg-white" id={popupId1}>
                 Hello
 
                 <PopupButton popupId={popupId1}>

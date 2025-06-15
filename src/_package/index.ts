@@ -1,3 +1,4 @@
+export * from './Package';
 export * as default from './Package';
 
-export * from './Interfaces';
+export type { PopupSettings, PopupWindowAnimationType } from './Interfaces';

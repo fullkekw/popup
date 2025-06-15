@@ -2,6 +2,8 @@ import React, { FC, ReactNode } from "react";
 
 
 
+export type PopupWindowAnimationType = 'fade' | 'scale' | null
+
 export interface PopupSettings {
   /** Prevent state change due to user interactions (only synthetic) */
   preventStateChange?: boolean
@@ -58,7 +60,6 @@ export interface PopupWindowProps extends React.DetailsHTMLAttributes<HTMLDivEle
 
   children?: ReactNode | ReactNode[]
   layerClassName?: string
-  defaultOpen?: boolean
   settings?: PopupSettings
 
   /** Passed useState value */
@@ -67,8 +68,12 @@ export interface PopupWindowProps extends React.DetailsHTMLAttributes<HTMLDivEle
   /** Passed useState setter */
   setIsOpen?(isOpen: boolean): void
 
-  /** @todo */
-  animation?: 'fade' | 'scale' | null
+  /** 
+   * Popup animation
+   * 
+   * @default "scale"
+   */
+  animation?: PopupWindowAnimationType
 }
 
 

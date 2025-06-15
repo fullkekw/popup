@@ -1,225 +1,13 @@
 import './styles.scss';
 
-import React, { createContext, FC, useContext, useEffect, useState } from "react";
+import React, { createContext, FC, useContext, useEffect, useRef, useState } from "react";
 import cn from 'classnames';
-import { PopupButtonProps, PopupContextProps, PopupLayerProps, PopupNode, PopupSettings, PopupWindowProps } from './Interfaces';
+import { PopupButtonProps, PopupContextProps, PopupLayerProps, PopupNode, PopupSettings, PopupWindowAnimationType, PopupWindowProps } from './Interfaces';
 import { createPortal } from 'react-dom';
 
 
 
-
-
-
-
-// export const PopupLayer: React.FC<PopupLayerProps> = ({ children, className, exitOnEscape, exitOnLayer, setIsPopupsOpen, preventScrollHiding, ...props }) => {
-//   const [isOpen, setIsOpen] = useState(false);
-
-//   const layerRef = useRef<HTMLDivElement>(null);
-
-//   exitOnEscape = exitOnEscape ?? true;
-//   exitOnLayer = exitOnLayer ?? true;
-
-
-//   // Init
-//   useEffect(() => {
-//     const layer = layerRef.current;
-//     if (!layer) throw new EFKW(`Layer ref is not found`);
-
-//     const dialogs = layer.querySelectorAll(`.${'fkw-popup-dialog'}`);
-//     if (!dialogs.length) throw new EFKW(`At least one dialog must be present inside PopupLayer`);
-//   }, []);
-
-//   // Observe mutations & handle click/keypress
-//   useEffect(() => {
-//     const layer = layerRef.current as HTMLDivElement;
-
-//     const observer = new MutationObserver(() => {
-//       const dialogs = layer.querySelectorAll(`.${'fkw-popup-dialog'}`);
-
-//       let isPopupActive = false;
-
-//       dialogs.forEach(dialog => {
-//         if (dialog.classList.contains('fkw-popup-dialog--active')) isPopupActive = true;
-//       });
-
-//       setIsOpen(isPopupActive);
-//     });
-
-//     observer.observe(layer, {
-//       childList: true,
-//       subtree: true,
-//       attributes: true
-//     });
-
-//     // Hadnle click/keypress
-//     layer.addEventListener('mousedown', e => {
-//       if (!exitOnLayer) return;
-
-//       const self = e.target as HTMLDivElement | undefined;
-//       if (!self) return;
-
-//       if (self.classList.contains('fkw-popup-layer')) closeAll();
-//     });
-
-//     window.addEventListener('keydown', e => {
-//       if (!exitOnEscape) return;
-
-//       const key = e.key;
-
-//       if (key === 'Escape') closeAll();
-//     });
-//   }, []);
-
-//   // Handle isOpen & setIsPopupsOpen
-//   useEffect(() => {
-//     if (!preventScrollHiding) {
-//       if (isOpen) {
-//         document.body.classList.add('fkw-popup--noScroll');
-//       } else {
-//         document.body.classList.remove('fkw-popup--noScroll');
-//       }
-//     }
-
-//     if (setIsPopupsOpen) setIsPopupsOpen(isOpen);
-//   }, [isOpen]);
-
-
-
-//   function closeAll() {
-//     const layer = layerRef.current as HTMLDivElement;
-//     const dialogs = layer.querySelectorAll(`.${'fkw-popup-dialog'}`);
-
-//     if (!layer.classList.contains('fkw-popup-layer--active')) return;
-
-//     dialogs.forEach(el => {
-//       if (el.classList.contains('fkw-popup-dialog--actionsPrevented')) return;
-//       el.classList.add('fkw-popup-dialog--close');
-//     });
-//   }
-
-
-
-//   return <div className={cn('fkw-popup-layer', isOpen && 'fkw-popup-layer--active', exitOnLayer && 'fkw-popup-layer--exitOnLayer', className)} ref={layerRef} {...props}>
-//     {children}
-//   </div>;
-// };
-
-// export const PopupDialog: React.FC<PopupDialogProps> = ({ children, className, id, preventUserInteractions, state, stateSetter, animation, ...props }) => {
-//   animation = animation !== null ? animation ?? 'fade' : null;
-
-//   const [isOpen, setIsOpen] = useState(false);
-
-//   const dialogRef = useRef<HTMLDivElement>(null);
-
-
-
-//   // Init
-//   useEffect(() => {
-//     const dialog = dialogRef.current;
-//     if (!dialog) throw new EFKW(`Dialog ref is not found`);
-//   }, []);
-
-//   // Observe mutations
-//   useEffect(() => {
-//     const dialog = dialogRef.current as HTMLDivElement;
-
-//     const observer = new MutationObserver(() => {
-//       if (preventUserInteractions) return console.warn(`[fkw-popup]: User action prevented`);
-
-//       if (dialog.classList.contains('fkw-popup-dialog--open')) {
-//         dialog.classList.remove('fkw-popup-dialog--open');
-//         toggle(true);
-//       }
-
-//       if (dialog.classList.contains('fkw-popup-dialog--close')) {
-//         dialog.classList.remove('fkw-popup-dialog--close');
-//         toggle(false);
-//       }
-//     });
-
-//     observer.observe(dialog, {
-//       attributes: true
-//     });
-//   }, []);
-
-//   // Handle isOpen
-//   useEffect(() => {
-//     const buttons = document.querySelectorAll(`[data-fkw-popup-dialog="${id}"]`);
-
-//     buttons.forEach(button => {
-//       if (isOpen) {
-//         button.classList.add('fkw-popup-button--active');
-//       } else {
-//         button.classList.remove('fkw-popup-button--active');
-//       }
-//     });
-//   }, [isOpen]);
-
-//   //* Sync inner state when out changed
-//   useEffect(() => {
-//     if (state === undefined) return;
-
-//     setIsOpen(state);
-//   }, [state]);
-
-
-
-//   function toggle(forceState?: boolean) {
-//     const to = forceState ?? !isOpen;
-
-//     if (stateSetter !== undefined && state !== undefined) {
-//       //* Sync only out state with inner
-//       stateSetter(to);
-//     } else if (stateSetter !== undefined && state === undefined) {
-//       //* Sync both states
-//       stateSetter(to);
-//       setIsOpen(to);
-//     } else {
-//       //* Sync only inner state with out
-//       setIsOpen(to);
-//     }
-//   }
-
-
-
-//   return <div className={cn('fkw-popup-dialog', isOpen && 'fkw-popup-dialog--active', preventUserInteractions && 'fkw-popup-dialog--actionsPrevented', animation && `${'fkw-popup-animation'}--${animation}`, className)} id={id} ref={dialogRef} role='dialog' aria-modal aria-hidden={!isOpen} {...props}>
-//     {children}
-//   </div>;
-// };
-
-// export const PopupButton: React.FC<PopupButtonProps> = ({ children, className, togglePopupId, disabled, onClick, as, ...props }) => {
-//   const Tag: keyof JSX.IntrinsicElements = as ?? 'button';
-
-//   function toggle() {
-//     if (disabled) return;
-
-//     togglePopup(togglePopupId);
-//     onClick ? onClick() : null;
-//   }
-
-// return <Tag className={cn('fkw-popup-button', className)} onClick={toggle} aria-haspopup="dialog" tabIndex={0} data-fkw-popup-dialog={togglePopupId} disabled={disabled} aria-disabled={disabled} {...props}>
-//   {children}
-// </Tag>;
-// };
-
-
-
-// function togglePopup(id: string) {
-//   const dialog = document.querySelector(`#${id}`) as HTMLDivElement;
-//   if (!dialog) throw new EFKW(`Dialog #${id} is not found in DOM`);
-
-//   if (dialog.classList.contains('fkw-popup-dialog--actionsPrevented')) return console.warn(`[fkw-popup]: User action prevented`);
-
-//   if (dialog.classList.contains('fkw-popup-dialog--active')) {
-//     dialog.classList.add('fkw-popup-dialog--close');
-//   } else {
-//     dialog.classList.add('fkw-popup-dialog--open');
-//   }
-// }
-
-
-
-const DEFAULT_SETTINGS: PopupSettings = {
+const DEFAULT_SETTINGS: Required<PopupSettings> = {
   disableScroll: true,
   exitOnDocument: true,
   exitOnEscape: true,
@@ -228,6 +16,7 @@ const DEFAULT_SETTINGS: PopupSettings = {
 
 // @ts-expect-error Need empty object
 const PopupContext = createContext<PopupContextProps>({});
+
 
 
 /** 
@@ -335,14 +124,15 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSe
 /** 
  * Popup window
  */
-export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, defaultOpen, style, id, settings: initialSettings, isOpen: state, setIsOpen: stateSetter, ...props }) => {
+export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, style, id, settings: initialSettings, isOpen: state, setIsOpen: stateSetter, animation: initialAnimation, ...props }) => {
   const ctx = useContext(PopupContext) as PopupContextProps;
 
+  const [animation] = useState<PopupWindowAnimationType>(initialAnimation ?? 'scale');
   const [settings] = useState<PopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [container, setContainer] = useState<Element | null>(null);
 
-  const [isOpen, setIsOpen] = useState<boolean>(Boolean(defaultOpen));
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [zIndex, setZIndex] = useState<number>(0);
 
 
@@ -354,7 +144,7 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
 
     ctx.registerNode({
       id,
-      open: Boolean(defaultOpen),
+      open: false,
       zIndex: 0,
       settings
     });
@@ -390,11 +180,14 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
   return createPortal(<>
     <section
       id={id}
-      className={cn(`fkw-popup-layer`, isOpen && 'fkw-popup--open', layerClassName)}
+      className={cn(`fkw-popup-layer`, isOpen && 'fkw-popup-layer--open', layerClassName)}
       style={{ zIndex: 10000 + zIndex, cursor: settings.exitOnDocument ? 'pointer' : 'auto', ...style }}
       onClick={settings.exitOnDocument ? e => ctx.toggleDocument(id, e) : undefined}
     >
-      <article className={cn(`fkw-popup`, className)} {...props}>
+      <article
+        className={cn(`fkw-popup`, isOpen && 'fkw-popup--open', animation && `fkw-popup-animation--${animation}`, className)}
+        {...props}
+      >
         {children}
       </article>
     </section>
