@@ -34,6 +34,10 @@ const Page: React.FC = () => {
                 <PopupButton popupId={popupId1}>
                   Close popup
                 </PopupButton>
+
+                <PopupButton popupId={popupId2}>
+                  Open popup 2
+                </PopupButton>
               </PopupWindow>
 
               <PopupWindow id={popupId2}>
@@ -42,12 +46,20 @@ const Page: React.FC = () => {
                 <PopupButton popupId={popupId2}>
                   Close popup
                 </PopupButton>
+
+                <PopupButton popupId={popupId1}>
+                  Open popup 1
+                </PopupButton>
               </PopupWindow>
             </div>
           </div>
 
           <PopupButton popupId={popupId1}>
             Open popup
+          </PopupButton>
+
+          <PopupButton popupId={popupId2}>
+            Open popup 2
           </PopupButton>
 
           <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />

@@ -232,6 +232,7 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, children }) => {
   const context: PopupContextProps = {
     nodes,
     toggleNode,
+    registerNode,
   };
 
 
@@ -240,21 +241,25 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, children }) => {
    * @param state Forced state
    */
   function toggleNode(id: string, state?: boolean) {
-    state = state ?? !nodes.some(el => el.id === id);
+    state = state ?? !nodes.find(el => el.id === id)?.open;
 
     const popup = document.querySelector(`#${id}`);
     if (!popup) throw new Error(`PopupWindow (#${id}) is not found in DOM`);
 
+    const zIndex = state ? Math.max(...nodes.map(el => el.zIndex)) + 1 : 0;
 
+    const node: PopupNode = {
+      id,
+      open: state,
+      zIndex
+    };
 
-    // Handle state
-    if (state) {
-      // Open popup
-      setNodes(prev => [...prev, { id }]);
-    } else {
-      // Close popup
-      setNodes(prev => prev.filter(el => el.id !== id));
-    }
+    setNodes(prev => [...prev.filter(el => el.id !== id), node]);
+  }
+
+  /** Register new node */
+  function registerNode(node: PopupNode) {
+    setNodes(prev => [...prev, node]);
   }
 
 
@@ -269,15 +274,16 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, children }) => {
 
 
 /** 
- * Popup item
+ * Popup window
  */
-export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, id, ...props }) => {
+export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, defaultState, style, id, ...props }) => {
   const ctx = useContext(PopupContext) as PopupContextProps;
 
   const [isMounted, setIsMounted] = useState(false);
   const [container, setContainer] = useState<Element | null>(null);
 
   const [isOpen, setIsOpen] = useState(false);
+  const [zIndex, setZIndex] = useState(0);
 
 
 
@@ -285,18 +291,28 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
   useEffect(() => {
     setContainer(document.querySelector('#fkw-popup-container'));
     setIsMounted(true);
+
+    ctx.registerNode({
+      id,
+      open: Boolean(defaultState),
+      zIndex: 0
+    });
   }, []);
 
   // Listen context
   useEffect(() => {
-    setIsOpen(ctx.nodes.some(el => el.id === id));
+    const node = ctx.nodes.find(el => el.id === id);
+    if (!node) return;
+
+    setIsOpen(node.open);
+    setZIndex(node.zIndex);
   }, [ctx]);
 
 
 
   if (!isMounted || !container) return null;
 
-  return createPortal(<section className={cn(`fkw-popup-layer`, isOpen && 'fkw-popup--open', layerClassName)} id={id}>
+  return createPortal(<section className={cn(`fkw-popup-layer`, isOpen && 'fkw-popup--open', layerClassName)} id={id} style={{ zIndex: 10000 + zIndex, ...style }}>
     <article className={cn(`fkw-popup`, className)} {...props}>
       {children}
     </article>

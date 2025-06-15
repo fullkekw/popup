@@ -4,11 +4,14 @@ import React, { FC, ReactNode } from "react";
 
 export interface PopupNode {
   id: string
+  open: boolean
+  zIndex: number
 }
 
 export interface PopupContextProps {
   nodes: PopupNode[]
   toggleNode(id: string, state?: boolean): void
+  registerNode(node: PopupNode): void
 }
 
 
@@ -26,6 +29,7 @@ export interface PopupWindowProps extends React.DetailsHTMLAttributes<HTMLDivEle
 
   children?: ReactNode | ReactNode[]
   layerClassName?: string
+  defaultState?: boolean
 
   /** @todo */
   animation?: 'fade' | 'scale' | null
