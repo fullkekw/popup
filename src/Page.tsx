@@ -4,11 +4,18 @@ import { PopupButton, PopupLayer, PopupWindow } from './_package/Package';
 
 
 const Page: React.FC = () => {
-  const [state, setState] = useState(false);
+  const [state, setState] = useState(true);
 
   const popupId1 = useId().replaceAll(':', '');
   const popupId2 = useId().replaceAll(':', '');
 
+
+  useEffect(() => {
+    // setTimeout(() => {
+    //   console.log('close');
+    //   setState(false);
+    // }, 2000);
+  }, []);
 
   useEffect(() => {
     console.log(`out state `, state);
@@ -28,7 +35,7 @@ const Page: React.FC = () => {
 
           <div>
             <div>
-              <PopupWindow className="popup-1 w-[400px] h-[450px] bg-white" id={popupId1} defaultOpen>
+              <PopupWindow className="popup-1 w-[400px] h-[450px] bg-white" id={popupId1} defaultOpen isOpen={state} setIsOpen={setState}>
                 Hello
 
                 <PopupButton popupId={popupId1}>
@@ -54,9 +61,16 @@ const Page: React.FC = () => {
             </div>
           </div>
 
+          <button onClick={() => setState(prev => !prev)}>
+            chnage state
+          </button>
+
+          <br />
+
           <PopupButton popupId={popupId1}>
             Open popup
           </PopupButton>
+          <br />
 
           <PopupButton popupId={popupId2}>
             Open popup 2

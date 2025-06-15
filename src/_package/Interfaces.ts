@@ -61,12 +61,14 @@ export interface PopupWindowProps extends React.DetailsHTMLAttributes<HTMLDivEle
   defaultOpen?: boolean
   settings?: PopupSettings
 
+  /** Passed useState value */
+  isOpen?: boolean
+
+  /** Passed useState setter */
+  setIsOpen?(isOpen: boolean): void
+
   /** @todo */
   animation?: 'fade' | 'scale' | null
-  /** @todo */
-  isOpen?: boolean
-  /** @todo */
-  setIsOpen?(isOpen: boolean): void
 }
 
 

@@ -335,7 +335,7 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSe
 /** 
  * Popup window
  */
-export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, defaultOpen, style, id, settings: initialSettings, ...props }) => {
+export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, defaultOpen, style, id, settings: initialSettings, isOpen: state, setIsOpen: stateSetter, ...props }) => {
   const ctx = useContext(PopupContext) as PopupContextProps;
 
   const [settings] = useState<PopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
@@ -368,6 +368,20 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
     setIsOpen(node.open);
     setZIndex(node.zIndex);
   }, [ctx]);
+
+  // Sync out state on current change
+  useEffect(() => {
+    if (stateSetter === undefined || state === isOpen) return;
+
+    stateSetter(isOpen);
+  }, [isOpen]);
+
+  // Sync current state on out change
+  useEffect(() => {
+    if (state === undefined || state === isOpen) return;
+
+    ctx.toggleNode(id, state);
+  }, [state]);
 
 
 
