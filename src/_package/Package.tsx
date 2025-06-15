@@ -2,7 +2,7 @@ import './styles.scss';
 
 import React, { createContext, FC, useContext, useEffect, useState } from "react";
 import cn from 'classnames';
-import { PopupButtonProps, PopupContextProps, PopupLayerProps, PopupNode, PopupWindowProps } from './Interfaces';
+import { PopupButtonProps, PopupContextProps, PopupLayerProps, PopupNode, PopupSettings, PopupWindowProps } from './Interfaces';
 import { createPortal } from 'react-dom';
 
 
@@ -219,6 +219,13 @@ import { createPortal } from 'react-dom';
 
 
 
+const DEFAULT_SETTINGS: PopupSettings = {
+  disableScroll: true,
+  exitOnDocument: true,
+  exitOnEscape: true,
+  preventStateChange: false
+};
+
 // @ts-expect-error Need empty object
 const PopupContext = createContext<PopupContextProps>({});
 
@@ -226,40 +233,92 @@ const PopupContext = createContext<PopupContextProps>({});
 /** 
  * Popup layer. Must be inside body tag
  */
-export const PopupLayer: FC<PopupLayerProps> = ({ className, children }) => {
+export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSettings, children }) => {
+  const [settings] = useState<PopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
   const [nodes, setNodes] = useState<PopupNode[]>([]);
 
   const context: PopupContextProps = {
     nodes,
     toggleNode,
     registerNode,
+    toggleDocument
   };
 
+
+
+  // Handle exitOnEscape
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    window.addEventListener('keydown', handleKeydown);
+
+    function handleKeydown(e: KeyboardEvent) {
+      const key = e.key;
+
+      if (key === 'Escape') {
+        const maxZIndex = Math.max(...nodes.filter(el => el.open).map(el => el.zIndex));
+        const node = nodes.find(el => el.open && el.zIndex === maxZIndex);
+        if (!node || !node.settings.exitOnEscape || !settings?.exitOnEscape) return;
+
+        toggleNode(node.id);
+      }
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+    };
+  }, [nodes]);
 
 
   /** 
    * @param state Forced state
    */
-  function toggleNode(id: string, state?: boolean) {
-    state = state ?? !nodes.find(el => el.id === id)?.open;
+  function toggleNode(nod: string | PopupNode, force?: boolean) {
+    let node: PopupNode;
 
-    const popup = document.querySelector(`#${id}`);
-    if (!popup) throw new Error(`PopupWindow (#${id}) is not found in DOM`);
+    if (typeof nod === 'string') {
+      node = { ...nodes.find(el => el.id === nod) } as PopupNode;
+    } else {
+      node = { ...nod };
+    }
 
-    const zIndex = state ? Math.max(...nodes.map(el => el.zIndex)) + 1 : 0;
+    if (!node.id) return;
+    if ((settings.preventStateChange || node.settings.preventStateChange) && force === undefined) return console.warn(`Popup action prevented`);
 
-    const node: PopupNode = {
-      id,
-      open: state,
-      zIndex
-    };
+    const open = force ?? !node?.open;
 
-    setNodes(prev => [...prev.filter(el => el.id !== id), node]);
+    node.open = open;
+    node.zIndex = open ? Math.max(...nodes.map(el => el.zIndex), 0) + 1 : 0;
+
+    setNodes(prev => [...prev.filter(el => el.id !== node.id), node]);
+
+    // Hide scroll on open
+    if (settings.disableScroll && node.settings.disableScroll && open) {
+      document.body.classList.add('fkw-popup--noScroll');
+    }
+
+    // Show scroll if no popup open
+    if (!open && !nodes.filter(el => el.id !== node.id).some(el => el.open)) {
+      document.body.classList.remove('fkw-popup--noScroll');
+    }
   }
 
   /** Register new node */
   function registerNode(node: PopupNode) {
     setNodes(prev => [...prev, node]);
+
+    if (node.open) toggleNode(node, true);
+  }
+
+  function toggleDocument(id: string, e: React.MouseEvent) {
+    const node: PopupNode = { ...nodes.find(el => el.id === id) } as PopupNode;
+    if (!node.id) return;
+    if (!node.settings.exitOnDocument) return;
+
+    const popup = (e.target as HTMLElement).closest('.fkw-popup');
+    if (popup || !node.settings.exitOnDocument || !settings.exitOnDocument) return;
+
+    toggleNode(node.id);
   }
 
 
@@ -276,14 +335,15 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, children }) => {
 /** 
  * Popup window
  */
-export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, defaultState, style, id, ...props }) => {
+export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, defaultOpen, style, id, settings: initialSettings, ...props }) => {
   const ctx = useContext(PopupContext) as PopupContextProps;
 
-  const [isMounted, setIsMounted] = useState(false);
+  const [settings] = useState<PopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
+  const [isMounted, setIsMounted] = useState<boolean>(false);
   const [container, setContainer] = useState<Element | null>(null);
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [zIndex, setZIndex] = useState(0);
+  const [isOpen, setIsOpen] = useState<boolean>(Boolean(defaultOpen));
+  const [zIndex, setZIndex] = useState<number>(0);
 
 
 
@@ -294,8 +354,9 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
 
     ctx.registerNode({
       id,
-      open: Boolean(defaultState),
-      zIndex: 0
+      open: Boolean(defaultOpen),
+      zIndex: 0,
+      settings
     });
   }, []);
 
@@ -312,11 +373,18 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
 
   if (!isMounted || !container) return null;
 
-  return createPortal(<section className={cn(`fkw-popup-layer`, isOpen && 'fkw-popup--open', layerClassName)} id={id} style={{ zIndex: 10000 + zIndex, ...style }}>
-    <article className={cn(`fkw-popup`, className)} {...props}>
-      {children}
-    </article>
-  </section>, container);
+  return createPortal(<>
+    <section
+      id={id}
+      className={cn(`fkw-popup-layer`, isOpen && 'fkw-popup--open', layerClassName)}
+      style={{ zIndex: 10000 + zIndex, cursor: settings.exitOnDocument ? 'pointer' : 'auto', ...style }}
+      onClick={settings.exitOnDocument ? e => ctx.toggleDocument(id, e) : undefined}
+    >
+      <article className={cn(`fkw-popup`, className)} {...props}>
+        {children}
+      </article>
+    </section>
+  </>, container);
 };
 
 
@@ -342,3 +410,15 @@ export const PopupButton: FC<PopupButtonProps> = ({ children, as, className, onC
     {children}
   </Tag>;
 };
+
+
+
+function reassingObject(target: object, refference: object) {
+  const payload = { ...refference };
+
+  for (const key in target) {
+    payload[key] = target[key];
+  }
+
+  return payload;
+}

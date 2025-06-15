@@ -2,16 +2,44 @@ import React, { FC, ReactNode } from "react";
 
 
 
+export interface PopupSettings {
+  /** Prevent state change due to user interactions (only synthetic) */
+  preventStateChange?: boolean
+
+  /** 
+   * Close popup on Escape
+   * 
+   * @default true
+   */
+  exitOnEscape?: boolean
+
+  /** 
+   * Close popup on document click
+   * 
+   * @default true
+   */
+  exitOnDocument?: boolean
+
+  /** 
+   * Disable document scroll when popup open
+   * 
+   * @default true
+   */
+  disableScroll?: boolean
+}
+
 export interface PopupNode {
   id: string
   open: boolean
   zIndex: number
+  settings: PopupSettings
 }
 
 export interface PopupContextProps {
   nodes: PopupNode[]
   toggleNode(id: string, state?: boolean): void
   registerNode(node: PopupNode): void
+  toggleDocument(id: string, e: React.MouseEvent): void
 }
 
 
@@ -20,6 +48,7 @@ export interface PopupLayerProps {
   children: ReactNode | ReactNode[]
 
   className?: string
+  settings?: PopupSettings
 }
 
 
@@ -29,18 +58,11 @@ export interface PopupWindowProps extends React.DetailsHTMLAttributes<HTMLDivEle
 
   children?: ReactNode | ReactNode[]
   layerClassName?: string
-  defaultState?: boolean
+  defaultOpen?: boolean
+  settings?: PopupSettings
 
   /** @todo */
   animation?: 'fade' | 'scale' | null
-  /** @todo */
-  preventStateChange?: boolean
-  /** @todo */
-  exitOnEscape?: boolean
-  /** @todo */
-  exitOnDocument?: boolean
-  /** @todo */
-  disableScroll?: boolean
   /** @todo */
   isOpen?: boolean
   /** @todo */
