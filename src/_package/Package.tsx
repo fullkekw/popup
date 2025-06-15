@@ -20,7 +20,7 @@ const PopupContext = createContext<PopupContextProps>({});
 
 
 /** 
- * Popup layer. Must be inside body tag
+ * Popup context provider. Must be inside body tag and in client environment (NextJS)
  */
 export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSettings, children }) => {
   const [settings] = useState<PopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
