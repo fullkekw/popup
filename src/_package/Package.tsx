@@ -181,11 +181,14 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
     <section
       id={id}
       className={cn(`fkw-popup-layer`, isOpen && 'fkw-popup-layer--open', layerClassName)}
-      style={{ zIndex: 10000 + zIndex, cursor: settings.exitOnDocument ? 'pointer' : 'auto', ...style }}
-      onClick={settings.exitOnDocument ? e => ctx.toggleDocument(id, e) : undefined}
+      style={{ zIndex: 10000 + zIndex, cursor: settings.exitOnDocument && !settings.preventStateChange ? 'pointer' : 'auto', ...style }}
+      onClick={settings.exitOnDocument && !settings.preventStateChange ? e => ctx.toggleDocument(id, e) : undefined}
     >
       <article
         className={cn(`fkw-popup`, isOpen && 'fkw-popup--open', animation && `fkw-popup-animation--${animation}`, className)}
+        role='dialog'
+        aria-modal
+        aria-hidden={!isOpen}
         {...props}
       >
         {children}
@@ -200,9 +203,22 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
  * Popup trigger button
  */
 export const PopupButton: FC<PopupButtonProps> = ({ children, as, className, onClick, disabled, popupId, ...props }) => {
-  const { toggleNode } = useContext(PopupContext) as PopupContextProps;
+  const ctx = useContext(PopupContext) as PopupContextProps;
+  const { toggleNode } = ctx;
 
   const Tag: keyof JSX.IntrinsicElements = as ?? 'button';
+
+  const [isActive, setIsActive] = useState<boolean>(false);
+
+
+
+  // Listen context
+  useEffect(() => {
+    const node = ctx.nodes.find(el => el.id === popupId);
+    if (!node) return;
+
+    setIsActive(node.open);
+  }, [ctx]);
 
 
 
@@ -213,7 +229,7 @@ export const PopupButton: FC<PopupButtonProps> = ({ children, as, className, onC
 
 
 
-  return <Tag className={cn('fkw-popup-button', className)} role='button' onClick={toggle} aria-haspopup="dialog" tabIndex={0} disabled={disabled} aria-disabled={disabled} data-fkw-popup-operator={popupId} {...props}>
+  return <Tag className={cn('fkw-popup-button', isActive && 'fkw-popup-button--active', className)} role='button' onClick={toggle} aria-haspopup="dialog" tabIndex={0} disabled={disabled} aria-disabled={disabled} data-fkw-popup-operator={popupId} aria-label={isActive ? 'Close Popup' : 'Open Popup'} {...props}>
     {children}
   </Tag>;
 };
