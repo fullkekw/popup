@@ -1,6 +1,6 @@
 import './styles.scss';
 
-import React, { createContext, FC, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, FC, useContext, useEffect, useState } from "react";
 import cn from 'classnames';
 import { PopupButtonProps, PopupContextProps, PopupLayerProps, PopupNode, PopupSettings, PopupWindowAnimationType, PopupWindowProps } from './Interfaces';
 import { createPortal } from 'react-dom';
@@ -20,7 +20,7 @@ const PopupContext = createContext<PopupContextProps>({});
 
 
 /** 
- * Popup layer. Must be inside body tag
+ * Popup context provider. Must be inside body tag and in client environment (NextJS)
  */
 export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSettings, children }) => {
   const [settings] = useState<PopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
@@ -204,7 +204,6 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
  */
 export const PopupButton: FC<PopupButtonProps> = ({ children, as, className, onClick, disabled, popupId, ...props }) => {
   const ctx = useContext(PopupContext) as PopupContextProps;
-  const { toggleNode } = ctx;
 
   const Tag: keyof JSX.IntrinsicElements = as ?? 'button';
 
@@ -223,7 +222,7 @@ export const PopupButton: FC<PopupButtonProps> = ({ children, as, className, onC
 
 
   function toggle(e: React.MouseEvent) {
-    toggleNode(popupId);
+    ctx.toggleNode(popupId);
     onClick && onClick(e);
   }
 

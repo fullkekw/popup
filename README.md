@@ -12,26 +12,37 @@ $ yarn add @fullkekw/popup
 Usage
 ```tsx
 import { FC } from 'react';
+import { PopupLayer, PopupWindow, PopupButton} from '@fullkekw/popup'
 import '@fullkekw/popup/css'; // Basic styles
 
 const Page: FC = (props) => {
   const popupId1 = 'popupId1'
   const popupId2 = 'popupId2'
 
-  return <div>
-   {/* Must be inside <body> tag */}
+  return <body>
     <PopupLayer>
       <PopupWindow id={popupId1}>
-        Popup Content
+        Popup Content 1
 
         <PopupButton popupId={popupId1}>
-          Close popup
+          Close popup 1
         </PopupButton>
 
         <PopupButton popupId={popupId2}>
           Open popup 2
         </PopupButton>
       </PopupWindow>
+
+    {/* Nested window always will be on top of the stacking context */}
+      <div>
+        <PopupWindow id={popupId2}>
+          Popup Content 2
+
+          <PopupButton popupId={popupId2}>
+            Close popup 2
+          </PopupButton>
+        </PopupWindow>
+      </div>
     </PopupLayer>
   </div>
 }
@@ -55,6 +66,7 @@ export default Page;
 Synthetic state handle. Will be opened by default
 ```tsx
 import { FC, useState } from 'react';
+import { PopupLayer, PopupWindow, PopupButton} from '@fullkekw/popup'
 import '@fullkekw/popup/css';
 
 const Page: FC = (props) => {
@@ -62,7 +74,7 @@ const Page: FC = (props) => {
 
   const [state, setState] = useState(true)
 
-  return <div>
+  return <body>
     <PopupLayer>
       <PopupWindow id={popupId1} isOpen={state} setIsOpen={setState}>
         Popup Content
@@ -72,7 +84,7 @@ const Page: FC = (props) => {
         </PopupButton>
       </PopupWindow>
     </PopupLayer>
-  </div>
+  </body>
 }
 
 export default Page;
@@ -80,13 +92,14 @@ export default Page;
 
 Disable exit on layer & escape
 ```tsx
-import { FC, useState } from 'react';
+import { FC } from 'react';
+import { PopupLayer, PopupWindow, PopupButton} from '@fullkekw/popup'
 import '@fullkekw/popup/css';
 
 const Page: FC = (props) => {
   const popupId1 = 'popupId1'
 
-  return <div>
+  return <body>
     <PopupLayer>
       <PopupWindow id={popupId1} settings={{exitOnLayer: false, exitOnDocument: false}}>
         Popup Content
@@ -96,7 +109,7 @@ const Page: FC = (props) => {
         </PopupButton>
       </PopupWindow>
     </PopupLayer>
-  </div>
+  </body>
 }
 
 export default Page;
@@ -130,20 +143,6 @@ export interface PopupSettings {
    * @default true
    */
   disableScroll?: boolean
-}
-
-export interface PopupNode {
-  id: string
-  open: boolean
-  zIndex: number
-  settings: PopupSettings
-}
-
-export interface PopupContextProps {
-  nodes: PopupNode[]
-  toggleNode(id: string, state?: boolean): void
-  registerNode(node: PopupNode): void
-  toggleDocument(id: string, e: React.MouseEvent): void
 }
 
 

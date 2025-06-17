@@ -39,7 +39,7 @@ export interface PopupNode {
 
 export interface PopupContextProps {
   nodes: PopupNode[]
-  toggleNode(id: string, state?: boolean): void
+  toggleNode(node: string | PopupNode, state?: boolean): void
   registerNode(node: PopupNode): void
   toggleDocument(id: string, e: React.MouseEvent): void
 }
