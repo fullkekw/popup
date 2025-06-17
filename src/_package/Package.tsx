@@ -156,7 +156,16 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
     if (!node) return;
 
     setIsOpen(node.open);
-    setZIndex(node.zIndex);
+
+    if (node.zIndex !== 0) {
+      // Instantly update zIndex
+      setZIndex(node.zIndex);
+    } else {
+      // Timeout zIndex update
+      setTimeout(() => {
+        setZIndex(node.zIndex);
+      }, 200);
+    }
   }, [ctx]);
 
   // Sync out state on current change
