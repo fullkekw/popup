@@ -1,7 +1,6 @@
 .fkw-popup {
   cursor: auto;
   transition: 0.2s ease-in-out;
-  user-select: auto;
 
   &--noScroll {
     overflow: hidden;
@@ -44,7 +43,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    user-select: none;
 
     &--open {
       opacity: 1;
