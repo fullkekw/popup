@@ -1,7 +1,11 @@
 ☁️ Migration Guides
 
-- [2.0.5 \> 2.0.6](#205--206)
+- [2.0.7](#207)
+- [2.0.6](#206)
 - [@fullkekw/fkw-popup@1.2.5](#fullkekwfkw-popup125)
+
+## 2.0.7
+- Returned extending HTMLElements
 
 ## 2.0.6
 - Added ```renderOnDemand``` property to render window content only when user open it
