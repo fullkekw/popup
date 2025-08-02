@@ -1,6 +1,6 @@
 import './styles.scss';
 
-import React, { createContext, FC, useContext, useEffect, useState } from "react";
+import React, { createContext, FC, useContext, useEffect, useMemo, useRef, useState } from "react";
 import cn from 'classnames';
 import { PopupButtonProps, PopupContextProps, PopupLayerProps, PopupNode, PopupSettings, PopupWindowAnimationType, PopupWindowProps } from './Interfaces';
 import { createPortal } from 'react-dom';
@@ -22,7 +22,7 @@ const PopupContext = createContext<PopupContextProps>({});
 /** 
  * Popup context provider. Must be inside body tag and in client environment (NextJS)
  */
-export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSettings, children }) => {
+export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSettings, children, style }) => {
   const [settings] = useState<PopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
   const [nodes, setNodes] = useState<PopupNode[]>([]);
 
@@ -115,7 +115,7 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSe
   return <PopupContext.Provider value={context}>
     {children}
 
-    <section className={cn(`fkw-popup-container`, className)} id='fkw-popup-container'></section>
+    <section className={cn(`fkw-popup-container`, className)} id='fkw-popup-container' style={style}></section>
   </PopupContext.Provider>;
 };
 
@@ -124,18 +124,29 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSe
 /** 
  * Popup window
  */
-export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, style, id, settings: initialSettings, isOpen: state, setIsOpen: stateSetter, animation: initialAnimation, ...props }) => {
+export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, style, id, settings: initialSettings, isOpen: state, setIsOpen: stateSetter, animation: initialAnimation, renderOnDemand, onExit, onOpen }) => {
   const ctx = useContext(PopupContext) as PopupContextProps;
 
   const [animation] = useState<PopupWindowAnimationType>(initialAnimation ?? 'scale');
   const [settings] = useState<PopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
   const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [isRendered, setIsRendered] = useState<boolean>(false);
   const [container, setContainer] = useState<Element | null>(null);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [zIndex, setZIndex] = useState<number>(0);
 
 
+
+  // Handle isRendered & onOpen, onExit
+  useMemo(() => {
+    if (renderOnDemand) {
+      if (isOpen) setIsRendered(true); // Render content only if window is open
+    } else setIsRendered(true);
+
+    if (isOpen && onOpen) onOpen();
+    if (!isOpen && onExit) onExit();
+  }, [isOpen]);
 
   // Mount
   useEffect(() => {
@@ -198,9 +209,8 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
         role='dialog'
         aria-modal
         aria-hidden={!isOpen}
-        {...props}
       >
-        {children}
+        {isRendered && children}
       </article>
     </section>
   </>, container);
@@ -211,7 +221,7 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
 /** 
  * Popup trigger button
  */
-export const PopupButton: FC<PopupButtonProps> = ({ children, as, className, onClick, disabled, popupId, ...props }) => {
+export const PopupButton: FC<PopupButtonProps> = ({ children, as, className, onClick, disabled, popupId, style }) => {
   const ctx = useContext(PopupContext) as PopupContextProps;
 
   const Tag: keyof JSX.IntrinsicElements = as ?? 'button';
@@ -237,7 +247,7 @@ export const PopupButton: FC<PopupButtonProps> = ({ children, as, className, onC
 
 
 
-  return <Tag className={cn('fkw-popup-button', isActive && 'fkw-popup-button--active', className)} role='button' onClick={toggle} aria-haspopup="dialog" tabIndex={0} disabled={disabled} aria-disabled={disabled} data-fkw-popup-operator={popupId} aria-label={isActive ? 'Close Popup' : 'Open Popup'} {...props}>
+  return <Tag className={cn('fkw-popup-button', isActive && 'fkw-popup-button--active', className)} role='button' onClick={toggle} aria-haspopup="dialog" tabIndex={0} disabled={disabled} aria-disabled={disabled} data-fkw-popup-operator={popupId} aria-label={isActive ? 'Close Popup' : 'Open Popup'} style={style}>
     {children}
   </Tag>;
 };

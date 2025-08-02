@@ -61,6 +61,7 @@ export default Page;
 - Will always be on top of the stacking context
 - Hightly customizable (you can even turn off scroll hide!)
 - Does not break elements with sticky position on oveflow hide
+- Render window content on demand
 
 ## 👀 Examples
 Synthetic state handle. Will be opened by default
@@ -90,7 +91,7 @@ const Page: FC = (props) => {
 export default Page;
 ```
 
-Disable exit on layer & escape
+Disable exit on layer & escape, popup content will be rendered on demand
 ```tsx
 import { FC } from 'react';
 import { PopupLayer, PopupWindow, PopupButton} from '@fullkekw/popup'
@@ -101,7 +102,7 @@ const Page: FC = (props) => {
 
   return <body>
     <PopupLayer>
-      <PopupWindow id={popupId1} settings={{exitOnLayer: false, exitOnDocument: false}}>
+      <PopupWindow id={popupId1} settings={{exitOnLayer: false, exitOnDocument: false}} renderOnDemand>
         Popup Content
 
         <PopupButton popupId={popupId1}>

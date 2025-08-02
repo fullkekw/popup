@@ -22,6 +22,10 @@ const Page: React.FC = () => {
   }, [state]);
 
 
+  function onOpen() { console.log('op'); }
+  function onExit() { console.log('ex'); }
+
+
 
   return (
     <>
@@ -35,7 +39,7 @@ const Page: React.FC = () => {
 
           <div>
             <div>
-              <PopupWindow className="popup-1 w-[400px] h-[450px] bg-white" id={popupId1} isOpen>
+              <PopupWindow className="popup-1 w-[400px] h-[450px] bg-white" id={popupId1} isOpen renderOnDemand onOpen={onOpen} onExit={onExit}>
                 Hello
 
                 <PopupButton popupId={popupId1}>
