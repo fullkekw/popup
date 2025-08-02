@@ -51,16 +51,22 @@ export interface PopupLayerProps {
 
   className?: string
   settings?: PopupSettings
+  style?: React.CSSProperties
 }
 
 
 
-export interface PopupWindowProps extends React.DetailsHTMLAttributes<HTMLDivElement> {
+export interface PopupWindowProps {
   id: string
 
   children?: ReactNode | ReactNode[]
+  className?: string
+  style?: React.CSSProperties
   layerClassName?: string
   settings?: PopupSettings
+
+  onOpen?(): void
+  onExit?(): void
 
   /** Render popup in DOM only when user requested it */
   renderOnDemand?: boolean
@@ -81,11 +87,12 @@ export interface PopupWindowProps extends React.DetailsHTMLAttributes<HTMLDivEle
 
 
 
-export interface PopupButtonProps extends React.DetailsHTMLAttributes<HTMLElement> {
+export interface PopupButtonProps {
   popupId: string
 
+  className?: string
+  style?: React.CSSProperties
   children?: ReactNode | ReactNode[]
-
   onClick?(e: React.MouseEvent): void
   disabled?: boolean
 
