@@ -62,6 +62,9 @@ export interface PopupWindowProps extends React.DetailsHTMLAttributes<HTMLDivEle
   layerClassName?: string
   settings?: PopupSettings
 
+  /** Render popup in DOM only when user requested it */
+  renderOnDemand?: boolean
+
   /** Passed useState value */
   isOpen?: boolean
 

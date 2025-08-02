@@ -1,6 +1,6 @@
 import './styles.scss';
 
-import React, { createContext, FC, useContext, useEffect, useState } from "react";
+import React, { createContext, FC, useContext, useEffect, useMemo, useRef, useState } from "react";
 import cn from 'classnames';
 import { PopupButtonProps, PopupContextProps, PopupLayerProps, PopupNode, PopupSettings, PopupWindowAnimationType, PopupWindowProps } from './Interfaces';
 import { createPortal } from 'react-dom';
@@ -124,18 +124,26 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSe
 /** 
  * Popup window
  */
-export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, style, id, settings: initialSettings, isOpen: state, setIsOpen: stateSetter, animation: initialAnimation, ...props }) => {
+export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, style, id, settings: initialSettings, isOpen: state, setIsOpen: stateSetter, animation: initialAnimation, renderOnDemand, ...props }) => {
   const ctx = useContext(PopupContext) as PopupContextProps;
 
   const [animation] = useState<PopupWindowAnimationType>(initialAnimation ?? 'scale');
   const [settings] = useState<PopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
   const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [isRendered, setIsRendered] = useState<boolean>(false);
   const [container, setContainer] = useState<Element | null>(null);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [zIndex, setZIndex] = useState<number>(0);
 
 
+
+  // Handle isRendered
+  useMemo(() => {
+    if (renderOnDemand) {
+      if (isOpen) setIsRendered(true); // Render content only if window is open
+    } else setIsRendered(true);
+  }, [isOpen]);
 
   // Mount
   useEffect(() => {
@@ -200,7 +208,7 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
         aria-hidden={!isOpen}
         {...props}
       >
-        {children}
+        {isRendered && children}
       </article>
     </section>
   </>, container);

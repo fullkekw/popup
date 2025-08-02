@@ -35,7 +35,7 @@ const Page: React.FC = () => {
 
           <div>
             <div>
-              <PopupWindow className="popup-1 w-[400px] h-[450px] bg-white" id={popupId1} isOpen>
+              <PopupWindow className="popup-1 w-[400px] h-[450px] bg-white" id={popupId1} isOpen renderOnDemand>
                 Hello
 
                 <PopupButton popupId={popupId1}>
