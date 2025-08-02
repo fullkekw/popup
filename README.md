@@ -62,6 +62,7 @@ export default Page;
 - Hightly customizable (you can even turn off scroll hide!)
 - Does not break elements with sticky position on oveflow hide
 - Render window content on demand
+- onOpen & noExit hooks
 
 ## 👀 Examples
 Synthetic state handle. Will be opened by default

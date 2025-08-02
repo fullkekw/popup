@@ -46,22 +46,18 @@ export interface PopupContextProps {
 
 
 
-export interface PopupLayerProps {
+export interface PopupLayerProps extends React.HTMLAttributes<HTMLElement> {
   children: ReactNode | ReactNode[]
 
-  className?: string
   settings?: PopupSettings
-  style?: React.CSSProperties
 }
 
 
 
-export interface PopupWindowProps {
+export interface PopupWindowProps extends React.HTMLAttributes<HTMLElement> {
   id: string
 
   children?: ReactNode | ReactNode[]
-  className?: string
-  style?: React.CSSProperties
   layerClassName?: string
   settings?: PopupSettings
 
@@ -87,11 +83,9 @@ export interface PopupWindowProps {
 
 
 
-export interface PopupButtonProps {
+export interface PopupButtonProps extends React.HTMLAttributes<HTMLElement> {
   popupId: string
 
-  className?: string
-  style?: React.CSSProperties
   children?: ReactNode | ReactNode[]
   onClick?(e: React.MouseEvent): void
   disabled?: boolean
