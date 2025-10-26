@@ -1,6 +1,6 @@
 import './styles.scss';
 
-import React, { createContext, FC, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, FC, JSX, useContext, useEffect, useMemo, useState } from "react";
 import cn from 'classnames';
 import { PopupButtonProps, PopupContextProps, PopupLayerProps, PopupNode, PopupSettings, PopupWindowAnimationType, PopupWindowProps } from './Interfaces';
 import { createPortal } from 'react-dom';
