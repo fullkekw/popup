@@ -1,32 +1,32 @@
 import './styles.scss';
 
-import React, { createContext, FC, JSX, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, FC, JSX, Suspense, useContext, useEffect, useMemo, useState } from "react";
 import cn from 'classnames';
-import { PopupButtonProps, PopupContextProps, PopupLayerProps, PopupNode, PopupSettings, PopupWindowAnimationType, PopupWindowProps } from './Interfaces';
+import { IPopupButtonProps, IPopupContextProps, IPopupLayerProps, IPopupNode, IPopupSettings, PopupWindowAnimationType, IPopupWindowProps } from './Interfaces';
 import { createPortal } from 'react-dom';
+import useMixedState from './useMixedState';
 
 
 
-const DEFAULT_SETTINGS: Required<PopupSettings> = {
+const DEFAULT_SETTINGS: Required<IPopupSettings> = {
   disableScroll: true,
   exitOnDocument: true,
   exitOnEscape: true,
   preventStateChange: false
 };
 
-// @ts-expect-error Need empty object
-const PopupContext = createContext<PopupContextProps>({});
+const PopupContext = createContext<IPopupContextProps>({} as IPopupContextProps);
 
 
 
 /** 
  * Popup context provider. Must be inside body tag and in client environment (NextJS)
  */
-export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSettings, children, ...props }) => {
-  const [settings] = useState<PopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
-  const [nodes, setNodes] = useState<PopupNode[]>([]);
+export const PopupLayer: FC<IPopupLayerProps> = ({ className, settings: initialSettings, children, ...props }) => {
+  const [settings] = useState<IPopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
+  const [nodes, setNodes] = useState<IPopupNode[]>([]);
 
-  const context: PopupContextProps = {
+  const context: IPopupContextProps = {
     nodes,
     toggleNode,
     registerNode,
@@ -62,11 +62,11 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSe
   /** 
    * @param state Forced state
    */
-  function toggleNode(nod: string | PopupNode, force?: boolean) {
-    let node: PopupNode;
+  function toggleNode(nod: string | IPopupNode, force?: boolean) {
+    let node: IPopupNode;
 
     if (typeof nod === 'string') {
-      node = { ...nodes.find(el => el.id === nod) } as PopupNode;
+      node = { ...nodes.find(el => el.id === nod) } as IPopupNode;
     } else {
       node = { ...nod };
     }
@@ -93,14 +93,14 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSe
   }
 
   /** Register new node */
-  function registerNode(node: PopupNode) {
+  function registerNode(node: IPopupNode) {
     setNodes(prev => [...prev, node]);
 
     if (node.open) toggleNode(node, true);
   }
 
   function toggleDocument(id: string, e: React.MouseEvent) {
-    const node: PopupNode = { ...nodes.find(el => el.id === id) } as PopupNode;
+    const node: IPopupNode = { ...nodes.find(el => el.id === id) } as IPopupNode;
     if (!node.id) return;
     if (!node.settings.exitOnDocument) return;
 
@@ -112,11 +112,13 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSe
 
 
 
-  return <PopupContext.Provider value={context}>
-    {children}
+  return <Suspense>
+    <PopupContext.Provider value={context}>
+      {children}
 
-    <section className={cn(`fkw-popup-container`, className)} id='fkw-popup-container' {...props}></section>
-  </PopupContext.Provider>;
+      <section className={cn(`fkw-popup-container`, className)} id='fkw-popup-container' {...props}></section>
+    </PopupContext.Provider>
+  </Suspense>;
 };
 
 
@@ -124,42 +126,37 @@ export const PopupLayer: FC<PopupLayerProps> = ({ className, settings: initialSe
 /** 
  * Popup window
  */
-export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerClassName, style, id, settings: initialSettings, isOpen: state, setIsOpen: stateSetter, animation: initialAnimation, renderOnDemand, onExit, onOpen, ...props }) => {
-  const ctx = useContext(PopupContext) as PopupContextProps;
+export const PopupWindow: FC<IPopupWindowProps> = ({ children, className, layerClassName, style, id, settings: initialSettings, isOpen: state, setIsOpen: stateSetter, animation: initialAnimation, onExit, onOpen, ...props }) => {
+  const ctx = useContext(PopupContext) as IPopupContextProps;
+
+  state = useMemo(() => state ?? false, []);
 
   const [animation] = useState<PopupWindowAnimationType>(initialAnimation ?? 'scale');
-  const [settings] = useState<PopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
-  const [isMounted, setIsMounted] = useState<boolean>(false);
-  const [isRendered, setIsRendered] = useState<boolean>(false);
+  const [settings] = useState<IPopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
   const [container, setContainer] = useState<Element | null>(null);
 
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useMixedState(state, stateSetter);
   const [zIndex, setZIndex] = useState<number>(0);
 
 
 
-  // Handle isRendered & onOpen, onExit
-  useMemo(() => {
-    if (renderOnDemand) {
-      if (isOpen) setIsRendered(true); // Render content only if window is open
-    } else setIsRendered(true);
-
-    if (isOpen && onOpen) onOpen();
-    if (!isOpen && onExit) onExit();
-  }, [isOpen]);
-
   // Mount
   useEffect(() => {
     setContainer(document.querySelector('#fkw-popup-container'));
-    setIsMounted(true);
 
     ctx.registerNode({
       id,
-      open: false,
+      open: state,
       zIndex: 0,
       settings
     });
   }, []);
+
+  // Handle onOpen, onExit
+  useEffect(() => {
+    if (isOpen && onOpen) onOpen();
+    if (!isOpen && onExit) onExit();
+  }, [isOpen]);
 
   // Listen context
   useEffect(() => {
@@ -175,46 +172,30 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
       // Timeout zIndex update
       setTimeout(() => {
         setZIndex(node.zIndex);
-      }, 200);
+      }, 200); // TODO: fix constant animation delay timeout
     }
   }, [ctx]);
 
-  // Sync out state on current change
-  useEffect(() => {
-    if (stateSetter === undefined || state === isOpen) return;
-
-    stateSetter(isOpen);
-  }, [isOpen]);
-
-  // Sync current state on out change
-  useEffect(() => {
-    if (state === undefined || state === isOpen) return;
-
-    ctx.toggleNode(id, state);
-  }, [state]);
 
 
+  if (!container) return null;
 
-  if (!isMounted || !container) return null;
-
-  return createPortal(<>
-    <section
-      id={id}
-      className={cn(`fkw-popup-layer`, isOpen && 'fkw-popup-layer--open', layerClassName)}
-      style={{ zIndex: 10000 + zIndex, cursor: settings.exitOnDocument && !settings.preventStateChange ? 'pointer' : 'auto', ...style }}
-      onClick={settings.exitOnDocument && !settings.preventStateChange ? e => ctx.toggleDocument(id, e) : undefined}
+  return createPortal(<section
+    id={id}
+    className={cn(`fkw-popup-layer`, isOpen && 'fkw-popup-layer--open', layerClassName)}
+    style={{ zIndex: 10000 + zIndex, cursor: settings.exitOnDocument && !settings.preventStateChange ? 'pointer' : 'auto', ...style }}
+    onClick={settings.exitOnDocument && !settings.preventStateChange ? e => ctx.toggleDocument(id, e) : undefined}
+  >
+    <article
+      className={cn(`fkw-popup`, isOpen && 'fkw-popup--open', animation && `fkw-popup-animation--${animation}`, className)}
+      role='dialog'
+      aria-modal
+      aria-hidden={!isOpen}
+      {...props}
     >
-      <article
-        className={cn(`fkw-popup`, isOpen && 'fkw-popup--open', animation && `fkw-popup-animation--${animation}`, className)}
-        role='dialog'
-        aria-modal
-        aria-hidden={!isOpen}
-        {...props}
-      >
-        {isRendered && children}
-      </article>
-    </section>
-  </>, container);
+      {children}
+    </article>
+  </section>, container);
 };
 
 
@@ -222,12 +203,12 @@ export const PopupWindow: FC<PopupWindowProps> = ({ children, className, layerCl
 /** 
  * Popup trigger button
  */
-export const PopupButton: FC<PopupButtonProps> = ({ children, as, className, onClick, disabled, popupId, ...props }) => {
-  const ctx = useContext(PopupContext) as PopupContextProps;
-
-  const Tag: keyof JSX.IntrinsicElements = as ?? 'button';
+export const PopupButton: FC<IPopupButtonProps> = ({ children, as, className, onClick, disabled, popupId, ...props }) => {
+  const ctx = useContext(PopupContext) as IPopupContextProps;
 
   const [isActive, setIsActive] = useState<boolean>(false);
+
+  const Tag: keyof JSX.IntrinsicElements = as ?? 'button';
 
 
 

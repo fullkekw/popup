@@ -10,6 +10,7 @@ const Page: React.FC = () => {
   const popupId2 = useId().replaceAll(':', '');
 
 
+
   useEffect(() => {
     setTimeout(() => {
       console.log('close');
@@ -39,7 +40,7 @@ const Page: React.FC = () => {
 
           <div>
             <div>
-              <PopupWindow className="popup-1 w-[500px] bg-white p-[20px]" layerClassName="p-[20px]" id={popupId1} isOpen renderOnDemand onOpen={onOpen} onExit={onExit}>
+              <PopupWindow className="popup-1 w-[500px] bg-white p-[20px]" layerClassName="p-[20px]" id={popupId1} isOpen={state} onOpen={onOpen} onExit={onExit}>
                 Hello
 
                 <div className="overflow-y-auto h-full bg-red-400">

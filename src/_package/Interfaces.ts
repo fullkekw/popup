@@ -2,9 +2,12 @@ import React, { FC, ReactNode } from "react";
 
 
 
+export type StateSetter<S = any> = React.Dispatch<React.SetStateAction<S>>;
 export type PopupWindowAnimationType = 'fade' | 'scale' | null
 
-export interface PopupSettings {
+
+
+export interface IPopupSettings {
   /** Prevent state change due to user interactions (only synthetic) */
   preventStateChange?: boolean
 
@@ -30,48 +33,45 @@ export interface PopupSettings {
   disableScroll?: boolean
 }
 
-export interface PopupNode {
+export interface IPopupNode {
   id: string
   open: boolean
   zIndex: number
-  settings: PopupSettings
+  settings: IPopupSettings
 }
 
-export interface PopupContextProps {
-  nodes: PopupNode[]
-  toggleNode(node: string | PopupNode, state?: boolean): void
-  registerNode(node: PopupNode): void
+export interface IPopupContextProps {
+  nodes: IPopupNode[]
+  toggleNode(node: string | IPopupNode, state?: boolean): void
+  registerNode(node: IPopupNode): void
   toggleDocument(id: string, e: React.MouseEvent): void
 }
 
 
 
-export interface PopupLayerProps extends React.HTMLAttributes<HTMLElement> {
+export interface IPopupLayerProps extends React.HTMLAttributes<HTMLElement> {
   children: ReactNode | ReactNode[]
 
-  settings?: PopupSettings
+  settings?: IPopupSettings
 }
 
 
 
-export interface PopupWindowProps extends React.HTMLAttributes<HTMLElement> {
+export interface IPopupWindowProps extends React.HTMLAttributes<HTMLElement> {
   id: string
 
   children?: ReactNode | ReactNode[]
   layerClassName?: string
-  settings?: PopupSettings
+  settings?: IPopupSettings
 
   onOpen?(): void
   onExit?(): void
-
-  /** Render popup in DOM only when user requested it */
-  renderOnDemand?: boolean
 
   /** Passed useState value */
   isOpen?: boolean
 
   /** Passed useState setter */
-  setIsOpen?(isOpen: boolean): void
+  setIsOpen?: StateSetter<boolean>
 
   /** 
    * Popup animation
@@ -83,7 +83,7 @@ export interface PopupWindowProps extends React.HTMLAttributes<HTMLElement> {
 
 
 
-export interface PopupButtonProps extends React.HTMLAttributes<HTMLElement> {
+export interface IPopupButtonProps extends React.HTMLAttributes<HTMLElement> {
   popupId: string
 
   children?: ReactNode | ReactNode[]
