@@ -4,7 +4,7 @@ import { PopupLayer, PopupButton, PopupWindow } from './_package/index';
 
 
 const Page: React.FC = () => {
-  const [state, setState] = useState(true);
+  const [state, setState] = useState(false);
 
   const popupId1 = useId().replaceAll(':', '');
   const popupId2 = useId().replaceAll(':', '');
@@ -14,7 +14,7 @@ const Page: React.FC = () => {
   useEffect(() => {
     setTimeout(() => {
       console.log('close');
-      setState(false);
+      setState(true);
     }, 2000);
   }, []);
 
@@ -40,7 +40,7 @@ const Page: React.FC = () => {
 
           <div>
             <div>
-              <PopupWindow className="popup-1 w-[500px] bg-white p-[20px]" layerClassName="p-[20px]" id={popupId1} isOpen={state} onOpen={onOpen} onExit={onExit}>
+              <PopupWindow className="popup-1 w-[500px] bg-white p-[20px]" layerClassName="p-[20px]" id={popupId1} isOpen={state} setIsOpen={setState} onOpen={onOpen} onExit={onExit}>
                 Hello
 
                 <div className="overflow-y-auto h-full bg-red-400">

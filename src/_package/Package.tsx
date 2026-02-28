@@ -129,13 +129,11 @@ export const PopupLayer: FC<IPopupLayerProps> = ({ className, settings: initialS
 export const PopupWindow: FC<IPopupWindowProps> = ({ children, className, layerClassName, style, id, settings: initialSettings, isOpen: state, setIsOpen: stateSetter, animation: initialAnimation, onExit, onOpen, ...props }) => {
   const ctx = useContext(PopupContext) as IPopupContextProps;
 
-  state = useMemo(() => state ?? false, []);
-
   const [animation] = useState<PopupWindowAnimationType>(initialAnimation ?? 'scale');
   const [settings] = useState<IPopupSettings>(reassingObject(initialSettings ?? {}, DEFAULT_SETTINGS));
   const [container, setContainer] = useState<Element | null>(null);
 
-  const [isOpen, setIsOpen] = useMixedState(state, stateSetter);
+  const [isOpen, setIsOpen] = useState(state ?? false);
   const [zIndex, setZIndex] = useState<number>(0);
 
 
@@ -146,7 +144,7 @@ export const PopupWindow: FC<IPopupWindowProps> = ({ children, className, layerC
 
     ctx.registerNode({
       id,
-      open: state,
+      open: isOpen,
       zIndex: 0,
       settings
     });
@@ -156,7 +154,7 @@ export const PopupWindow: FC<IPopupWindowProps> = ({ children, className, layerC
   useEffect(() => {
     if (isOpen && onOpen) onOpen();
     if (!isOpen && onExit) onExit();
-  }, [isOpen]);
+  }, [state]);
 
   // Listen context
   useEffect(() => {
@@ -175,6 +173,20 @@ export const PopupWindow: FC<IPopupWindowProps> = ({ children, className, layerC
       }, 200); // TODO: fix constant animation delay timeout
     }
   }, [ctx]);
+
+  // Sync out state on current change
+  useEffect(() => {
+    if (stateSetter === undefined || state === isOpen) return;
+
+    stateSetter(isOpen);
+  }, [isOpen]);
+
+  // Sync current state on out change
+  useEffect(() => {
+    if (state === undefined || state === isOpen) return;
+
+    ctx.toggleNode(id, state);
+  }, [state]);
 
 
 
